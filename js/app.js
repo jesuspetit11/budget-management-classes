@@ -103,6 +103,11 @@ function agregarGasto(e) {
     //Mensaje de exito
     ui.imprimirAlerta("Correcto, agregando gasto...", "exito");
 
+    //Imprimir los gastos
+    const { gastos } = presupuesto;
+    ui.agregarGastoListado(gastos);
+
+
     //Reinicia el formulario
     formulario.reset();
     
