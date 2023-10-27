@@ -22,6 +22,11 @@ class Presupuesto {
     nuevoGasto(gasto){
         this.gastos = [...this.gastos, gasto];
         console.log(this.gastos);
+        this.calcularRestante(); //Lo mandamos a llamar cada vez que agregamos un gasto
+    }
+    calcularRestante(){
+        const gastado = this.gastos.reduce( (total, gasto)=> total + gasto.cantidad, 0); //Define cuanto dinero hemos gastado
+        this.restante = this.presupuesto - gastado; //Esto ya es parte del obj de presupuesto
     }
 }
 
@@ -41,16 +46,55 @@ class UI {
         } else {
             divMensaje.classList.add("alert-success");
         }
-
+        
         //Mensaje de error
         divMensaje.textContent = mensaje;
         //Insertar en el HTML
         document.querySelector(".primario").insertBefore(divMensaje, formulario);
-
+        
         //Quitar mensaje
         setTimeout(() => {
             divMensaje.remove()
         }, 2200);
+    }
+    
+    agregarGastoListado(gastos){
+        
+        this.limpiarHTML(); //Elimina el HTML previo
+        
+        //Iterar sobre los gastos
+        gastos.forEach(gasto => {
+            const { cantidad, nombre, id } = gasto;
+            
+            //Crear un LI
+            const nuevoGasto = document.createElement("li");
+            nuevoGasto.className = "list-group-item d-flex justify-content-between align-items-center";
+            nuevoGasto.dataset.id = id;
+            console.log(nuevoGasto);
+            
+            //Agregar el HTML del gasto
+            nuevoGasto.innerHTML = `${nombre} <span class="badge badge-primary badge-pill">${cantidad}</span>`;
+            
+            //Botón para borrar el gasto
+            const btnBorrar = document.createElement("button");
+            btnBorrar.innerHTML = "Borrar &times" //&times nos da una X perfecta
+            btnBorrar.classList.add("btn", "btn-danger", "borrar-gasto");
+            nuevoGasto.appendChild(btnBorrar);
+            
+            //Agregar al HTML
+            gastoListado.appendChild(nuevoGasto);
+        });
+    }
+    
+    //Limpiar HTML
+    limpiarHTML(){
+        while(gastoListado.firstChild){
+            gastoListado.removeChild(gastoListado.firstChild);
+        }
+    }
+    
+    actualizarRestante(restante){
+        document.querySelector("#restante").textContent = restante;
     }
 }
 
@@ -70,8 +114,6 @@ function preguntarPresupuesto(){
 
     //Presupuesto válido
     presupuesto = new Presupuesto(presupuestoUsuario); //Instancia de presupuesto
-    console.log(presupuesto);
-
     ui.insertarPresupuesto(presupuesto); //Presupuesto es un objeto
 
 }
@@ -104,9 +146,9 @@ function agregarGasto(e) {
     ui.imprimirAlerta("Correcto, agregando gasto...", "exito");
 
     //Imprimir los gastos
-    const { gastos } = presupuesto;
+    const { gastos, restante } = presupuesto; //Destructuramos del obj instancia presupuesto para pasar solamente gastos
     ui.agregarGastoListado(gastos);
-
+    ui.actualizarRestante(restante);
 
     //Reinicia el formulario
     formulario.reset();
